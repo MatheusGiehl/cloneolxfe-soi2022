@@ -1,6 +1,6 @@
 import styled from 'styled-components'
 
-export const HeaderArea = styled.div`
+export const NotFoundArea = styled.div`
 background-color: #BA55D3;
 
 .container {

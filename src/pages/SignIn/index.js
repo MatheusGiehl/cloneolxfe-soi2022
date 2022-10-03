@@ -1,20 +1,22 @@
-import React, { useState } from 'react'
-import { PageArea } from './styled'
-import { PageContainer, PageTitle } from '../../components/MainComponents'
-import useAPI from '../../helpers/OlxAPI'
-import { doLogin } from '../../helpers/AuthHandler'
+import React, { useState } from 'react';
+import { PageArea } from './styled';
+import { PageContainer, PageTitle, ErrorMessage } from '../../components/MainComponents';
+import useAPI from '../../helpers/OlxAPI';
+import { doLogin } from '../../helpers/AuthHandler';
 
 const Page = () => {
-    const api = useAPI()
+    const api = useAPI();
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [rememberPassword, setRememberPassword] = useState(false)
-    const [disabled, setDisabled] = useState(false)
-    const [error, setError] = useState('')
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [rememberPassword, setRememberPassword] = useState(false);
+    const [disabled, setDisabled] = useState(false);
+    const [error, setError] = useState('');
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
+        e.preventDefault();
+        setDisabled(true);
+        setError('');
         const json = await api.login(email, password)
         if (json.error) {
             setError(json.error)
@@ -22,6 +24,7 @@ const Page = () => {
             doLogin(json.token, rememberPassword)
             window.location.href = '/'
         }
+        setDisabled(false);
     }
 
     return (
@@ -30,6 +33,11 @@ const Page = () => {
                 Login
             </PageTitle>
             <PageArea>
+                {error &&
+                  <ErrorMessage>
+                    {error}
+                  </ErrorMessage>
+                }
                 <form 
                 onSubmit={handleSubmit}
                 >
@@ -47,6 +55,9 @@ const Page = () => {
                             <input
                             type="email"
                             disabled = {disabled}
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
                             />
                         </div>
                     </label>
@@ -64,6 +75,9 @@ const Page = () => {
                             <input
                             type="password"
                             disabled = {disabled}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            required
                             />
                         </div>
                     </label>
@@ -81,6 +95,9 @@ const Page = () => {
                             <input
                             type="checkbox"
                             disabled = {disabled}
+                            className="check"
+                            checked={rememberPassword}
+                            onChange={() => setRememberPassword(!rememberPassword)}
                             />
                         </div>
                     </label>

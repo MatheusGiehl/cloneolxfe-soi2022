@@ -12,8 +12,8 @@ export const SearchArea = styled.div`
     box-shadow: 1px 1px 1px 0.3px rgba(0, 0, 0, 0.2);
     display: flex;
 
-    form {
-        flex: 1;
+    form { 
+        flex: 1%;
         display: flex;
 
         input, select {
@@ -80,4 +80,25 @@ export const SearchArea = styled.div`
   }
 `;
 
-export const PageArea = styled.div``;
+export const PageArea = styled.div`
+  h2 {
+    font-size: 20px;
+  }
+
+  .list {
+    display: flex;
+    flex-wrap: wrap;
+
+    .adItem {
+      width: 25%;
+    }
+  }
+
+  .seeAllLink {
+    color: #000 ;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 10px;
+  }
+`;

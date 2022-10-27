@@ -19,7 +19,7 @@ const Page = () => {
 
     useEffect(() => {
         const getStates = async () => {
-            const sList = await getStates()
+            const sList = await api.getStates()
             setStateList(sList);
         }
         getStates();
@@ -105,7 +105,7 @@ const Page = () => {
                                     {stateList.map((i,k) => 
                                     <option
                                     key={k}
-                                    valu={i.id}
+                                    value={i.id}
                                     >
                                         {i.name}
                                     </option>

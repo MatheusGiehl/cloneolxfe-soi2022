@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageArea, SearchArea } from './styled';
-import { PageContainer, ErrorMessage } from '../../components/MainComponents';
+import { PageContainer} from '../../components/MainComponents';
 import useAPI from '../../helpers/OlxAPI';
 import AdItem from '../../components/AdItem'
 
@@ -9,23 +9,23 @@ const Page = () => {
     const api = useAPI();
 
     const [stateList, setStateList] = useState([]);
-    const [categorias, setCategorias] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [adList, setAdList] = useState([]);
 
     useEffect(() => {
         const getState = async () => {
-            const sList = await api.getStates();
+            const sList = await api.getState();
             setStateList(sList);
         }
         getState();
     }, []);
 
     useEffect(() => {
-        const getCategorias = async () => {
-            const cats = await api.getCategorias();
-            setCategorias(cats);
+        const getCategories = async () => {
+            const cats = await api.getCategories();
+            setCategories(cats);
         }
-        getCategorias();
+        getCategories();
     }, []);
 
     useEffect(() => {
@@ -61,7 +61,7 @@ const Page = () => {
                     </form>
                 </div>
                 <div className="categoryList">
-                    {categorias.map((i, k) =>
+                    {categories.map((i, k) =>
                     <Link
                     key={k}
                     to={`/ads/cat=${i.slug}`}
@@ -85,6 +85,8 @@ const Page = () => {
                 <Link to="/ads" className="seeAllLink">
                     Ver todos
                 </Link>
+                <hr />
+                Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. 
             </PageArea>
         </PageContainer>
         </>

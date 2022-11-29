@@ -37,7 +37,7 @@ const Page = () => {
         thousendsSeparatorSymbol: '.',
         allowDecimal: true,
         decimalSymbol: ','
-    })
+    });
 
     const handleSubmit = async (e) => {
 
@@ -217,7 +217,6 @@ const Page = () => {
                         >
                             <input
                             disabled = {disabled}
-                            value={description}
                             ref={fileFild}
                             type="file"
                             multiple

@@ -9,17 +9,51 @@ import "react-slideshow-image/dist/styles.css";
 
 
 const Page = () => {
-    const api = useAPI();
+    const settings = {
+        dots: true,
+        infinite:true,
+        speed : 500,
+        slidesToShow: 4,
+        slidesToScroll : 2,
+        responsive: [
+            {
+                breackpoint: 600,
+                settings : {
+                    slidesToShow: 1,
+                    slidesToScroll: 1,
+                    dots: true,
+                    infinite: true,
+                }
+            }
+        ]
+    };
 
-    const [name, setName] =useState('');
-    const [stateLoc, setStateLoc] = useState('');
-    const [stateList, setStateList] = useState([]);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [rememberPassword, setRememberPassword] = useState(false);
+    const api = useAPI();
+    const fileFild = useRef();
+
+    const [user, setUser] = useState({});
     const [disabled, setDisabled] = useState(false);
+    const [adsList, setAdsList] = useState([]);
+
+    const [nameUser, setNameUser] =useState('');
+    const [emailUser, setEmailUser] = useState('');
+    const [stateUser, setStateUser] = useState('');
+    const [stateList, setStateList] = useState([]);
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    const [categories, setCategories] = useState([]);
+
+    const [visibleModal, setVisibleModal] = useState(false);
+    const [adsStatusModal, setAdsStatusModal] = useState(false);
+    const [adTitleModal, setAdTitleModal] = useState("");
+
+    const [categoryModal, setCategoryModal] = useState('');
+    const [priceModal, setPriceModal] = useState('');
+    const [priceNegociabledModal, setPriceNegociableModal] = useState(false);
+    const [imagesModal, setImagesModal] = useState([]);
+    const [getIdAdModal, setGetIdAdModal] = useState('');
+    const [descriptionModal, setDescriptionModal] = useState('');
 
     useEffect(() => {
         const getStates = async () => {
@@ -29,30 +63,121 @@ const Page = () => {
         getStates();
     }, []);
 
+    useEffect(() =>{
+        const getCategories = async () => {
+            const resp = await api.getCategories();
+            setCategories(resp);
+        }
+        getCategories();
+    }, []);
+
+    useEffect(() =>{
+        const getUser = async () => {
+            const resp = await api.getUser();
+            setAdsList(resp.ads);
+            setUser(resp);
+            setNameUser(resp.name);
+            setEmailUser(resp.email);
+        }
+        getUser();
+    }, []);
+
+    useEffect(() => {
+        if(user) {
+            stateList.map(function (item) {
+                if(item.name === user.state) {
+                    setStateUser(item._id);
+                }
+            })
+        }
+    },[user]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setDisabled(true);
-        setError('');
-        if (password !== confirmPassword) {
-            setError("Senhas não batem");
-            setDisabled(false)
-            return;
-        }
-
-        const json = await api.register(
-            name,
-            stateLoc,
-            email,
-            password
-        );
-        if (json.error) {
-            setError(json.error)
+        stateList.map(function (item) {
+            if(item._id === stateUser) {
+                setStateUser(item.name);
+            }
+        });
+        const resp = await api.updateUser(nameUser, emailUser, stateUser, password);
+        if (resp.error) {
+            setError(resp.error);
         } else {
-            doLogin(json.token)
-            window.location.href = '/'
+            window.location.href = '/my-accout'
         }
         setDisabled(false);
-    }
+
+        };
+    
+
+    const handleSubmitModal = async (e) => {
+        e.preventDefault();
+        setDisabled(true);
+        setError('');
+
+        let errors = [];
+        if(!adTitleModal.trim()) {
+            errors.push("Título obrigatório")
+        }
+
+        if(!categoryModal.trim()) {
+            errors.push("É necessário informar uma categoria")
+        }
+
+        if(errors.length === 0) {
+            const formData = new FormData();
+            formData.append("status", adsStatusModal);
+            formData.append("title", adTitleModal);
+            formData.append("price", priceModal);
+            formData.append("priceneg", priceNegociabledModal);
+            formData.append("desc", descriptionModal);
+            formData.append("cat", categoryModal);
+
+            if(fileFild.current.files.length > 0) {
+                for(let i=0; i < fileFild.current.files.length; i++) {
+                    formData.append("img", fileFild.current.files[i]);
+                }
+            }
+
+            const response = await api.updateAd(formData, getIdAdModal);
+            if(!response.error) {
+            window.location.href = '/my-account';
+            } else {
+                setError(response.error);
+            }
+        } else {
+            setError(errors.join("/n")); 
+        }
+
+        setDisabled(false);
+        setVisibleModal(false);
+    };
+
+    const priceMask = createNumberMask({
+        prefix: 'R$',
+        includeThousendSeparator: true , 
+        thousendsSeparatorSymbol: '.',
+        allowDecimal: true,
+        decimalSymbol: ','
+    });
+
+    function openModal(props) {
+        categories.map((item) =>{
+            if(item.slug === props.category) {
+                setCategoryModal(item._id);
+            }
+            return  '';
+        });
+        setAdsStatusModal(props.status);
+        setAdTitleModal(props.title);
+        setPriceNegociableModal(props.priceNegociabledModal);
+        setPriceModal(props.price);
+        setDescriptionModal(props.description);
+        setImagesModal(props.images);
+        setGetIdAdModal(props.id);
+        setVisibleModal(true);
+    };
 
     return (
         <PageContainer>
@@ -85,8 +210,8 @@ const Page = () => {
                         <div className='pageTopRight'>
                             <form onSubmit={handleSubmit} className='formRight'>
                             <label 
-                    className='area'
-                    >
+                             className='area'
+                            >
                         <div 
                         className='area--title'
                         >
@@ -98,8 +223,8 @@ const Page = () => {
                             <input
                             type="text"
                             disabled = {disabled}
-                            value={name}
-                            onChange={e => setName(e.target.value)}
+                            value={nameUser }
+                            onChange={e => setNameUser(e.target.value)}
                             required
                             />
                         </div>
@@ -118,7 +243,7 @@ const Page = () => {
                             <select
                             required
                             disabled={disabled}
-                            value={stateLoc}
+                            value={stateUser}
                             onChange={e => setStateUser(e.target.value)}
                             >
                                 <option></option>
@@ -147,7 +272,7 @@ const Page = () => {
                             <input
                             type="email"
                             disabled = {disabled}
-                            value={email}
+                            value={emailUser}
                             onChange={e => setEmailUser(e.target.value)}
                             required
                             />
@@ -237,8 +362,8 @@ const Page = () => {
                             <input
                             type="text"
                             disabled = {disabled}
-                            value={title}
-                            onChange={e => setTitle(e.target.value)}
+                            value={adTitleModal}
+                            onChange={e => setAdTitleModal(e.target.value)}
                             required
                             />
                         </div>
@@ -257,7 +382,7 @@ const Page = () => {
                             <select
                             required
                             disabled={disabled}
-                            onChange={e => setCategory(e.target.value)}
+                            onChange={e => setCategoryModal(e.target.value)}
                             >
                                 <option></option>
                                     {categories && categories.map((catego) => 
@@ -286,8 +411,8 @@ const Page = () => {
                             mask={priceMask}
                             placeholder="R$ "
                             disabled = {disabled || priceNegociabled}
-                            value={price}
-                            onChange={e => setPrice(e.target.value)}
+                            value={priceModal}
+                            onChange={e => setPriceModal(e.target.value)}
                             required
                             />
                         </div>
@@ -307,8 +432,8 @@ const Page = () => {
                             className="check"
                             type="checkbox"
                             disabled = {disabled}
-                            onChange={e => setPriceNegociabled(!priceNegociabled)}
-                            checked = {priceNegociabled}
+                            onChange={e => setPriceNegociableModal(!priceNegociable)}
+                            checked = {priceNegociable}
                             />
                         </div>
                     </label>
@@ -325,8 +450,8 @@ const Page = () => {
                         >
                             <textarea
                             disabled = {disabled}
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
+                            value={descriptionModal}
+                            onChange={e => setDescriptionModal(e.target.value)}
                             >
 
                             </textarea>
@@ -345,7 +470,6 @@ const Page = () => {
                         >
                             <input
                             disabled = {disabled}
-                            value={description}
                             ref={fileFild}
                             type="file"
                             multiple
@@ -366,7 +490,7 @@ const Page = () => {
                             <button
                             disabled = {disabled}
                             >
-                                Adicionar Anúncio
+                                Atualizar
                             </button>
                         </div>
                     </label>
